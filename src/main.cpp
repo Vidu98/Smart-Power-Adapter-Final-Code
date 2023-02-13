@@ -15,6 +15,7 @@ namespace IO {
 }
 
 namespace LFS {
+    const char *ID_PATH = "/id.txt";
     const char *SELF_AP_CREDENTIALS_PATH = "/HomeAPCredentials.txt";
 }
 
@@ -93,6 +94,24 @@ bool switchMain(){
     return s;
 }
 
+void writeID(String s){
+    File file = LittleFS.open(LFS::ID_PATH, "w");
+    file.print(s);
+    file.close();
+}
+
+String getID() {
+  String id;
+  File file = LittleFS.open(LFS::ID_PATH, "r");
+  if (!file) {
+    Serial.println("Failed to open file for reading");
+    return ("failed");
+  }
+  while (file.available()) { id = (file.readString()); }
+  file.close();
+  return id;
+}
+
 void setup() {
     //Serial communication
     Serial.begin(115200);
@@ -101,6 +120,11 @@ void setup() {
 
     //LittleFS
     LittleFS.begin();
+
+    //writeID("BS010002");
+    Serial.println("Device ID: " + getID());
+
+
     
 
     // if (digitalRead(IO::PIN_RESET) == HIGH) {
