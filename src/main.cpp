@@ -19,6 +19,11 @@ namespace LFS {
     const char *SELF_AP_CREDENTIALS_PATH = "/HomeAPCredentials.txt";
 }
 
+namespace SIN {
+    const int nReads = 10;
+    const long rDelay = 1000;
+}
+
 namespace WIFI {
     WiFiClient client;
 }
@@ -194,19 +199,17 @@ void setup() {
         while (true) {
             //bool success = switchMain();
 
-            // Sensor Reading the analogue values
-            float RV = getV();
-            float RI = getI();
-            
-            // Sensor Data jason format and print the serial print
             DynamicJsonDocument doc(1024);
-            doc["v"] = RV;
-            doc["i"] = RI;
-            doc["time"] = time(NULL);
-
             DynamicJsonDocument doc2(1024);
-            doc2[0] = doc;
-            //doc2[1] = doc;
+
+            for (int i = 0; i < SIN::nReads; i++){
+                doc["v"] = getV();
+                doc["i"] = getI();
+                doc["time"] = time(NULL);
+
+                doc2[i] = doc;
+                delay(SIN::rDelay);
+            } 
             
             char buffer[256];
             serializeJson(doc2, buffer);
