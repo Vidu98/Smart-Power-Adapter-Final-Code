@@ -21,8 +21,12 @@ namespace LFS {
 
 namespace SIN {
     const int nReads = 10;
-    const long rDelay = 1000;
+    const unsigned long rDelay = 100;
+
+    const int vSrg[3] = {245,   250,    255};
+    const int iSrg[3] = {8,     9,      10};
 }
+
 
 namespace WIFI {
     WiFiClient client;
@@ -117,6 +121,10 @@ String getID() {
   return id;
 }
 
+void surgeProtect(int m){
+    if((getV()> SIN::vSrg[0]) || (getI()> SIN::iSrg[m])) relayOn(false);
+}
+
 void setup() {
     //Serial communication
     Serial.begin(115200);
@@ -208,14 +216,20 @@ void setup() {
                 doc["time"] = time(NULL);
 
                 doc2[i] = doc;
-                delay(SIN::rDelay);
+                //delay(SIN::rDelay);
+
+                long t0 = millis();
+                while ((millis()<t0+SIN::rDelay)&&(millis()-t0 >= 0)){
+                    surgeProtect(0);
+                }
+                
             } 
             
             char buffer[256];
             serializeJson(doc2, buffer);
             Serial.println(buffer);
 
-            MQTT::client.publish("readings", 0, true, buffer);
+            MQTT::client.publish("/readings", 0, true, buffer);
             delay(10000);
         }
     } else {
